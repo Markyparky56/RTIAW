@@ -14,8 +14,8 @@ public:
     , Dir(dir)
   {}
 
-  position GetStart() const { return Start; }
-  direction GetDirection() const { return Dir; }
+  vec3 GetStart() const { return Start; }
+  vec3 GetDirection() const { return Dir; }
 
   position EvalAt(real t) const
   {

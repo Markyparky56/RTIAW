@@ -9,9 +9,15 @@
 #include "common.hpp"
 #include "pixel.hpp"
 #include "ray.hpp"
+#include "hittests.hpp"
 
 colour RayColour(const Ray& ray)
 {
+  if (HitSphere(position(0, 0, -1), 0.5, ray))
+  {
+    return colour(1, 0, 0);
+  }
+
   const vec3 unitDirection = glm::normalize(ray.GetDirection());
   const real t = real(0.5) * (unitDirection.y + real(1.0));
   return (real(1.0) - t) * colour(1.0) + t * colour(0.5, 0.7, 1.0);

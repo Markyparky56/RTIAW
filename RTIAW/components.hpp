@@ -19,6 +19,10 @@ struct position : public vec3
     *this = { vec.x, vec.y, vec.z };
     return *this;
   }
+  explicit operator vec3() const
+  {
+    return *this;
+  }
 };
 
 struct direction : public vec3
@@ -36,6 +40,10 @@ struct direction : public vec3
   direction& operator=(const vec3& vec)
   {
     *this = { vec.x, vec.y, vec.z };
+    return *this;
+  }
+  explicit operator vec3() const
+  {
     return *this;
   }
 };

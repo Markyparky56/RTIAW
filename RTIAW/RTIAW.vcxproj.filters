@@ -35,5 +35,8 @@
     <ClInclude Include="components.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="hittests.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
