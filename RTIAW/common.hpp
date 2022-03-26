@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <glm/fwd.hpp>
 
 using uint8 = std::uint8_t;
 using uint16 = std::uint16_t;
@@ -19,3 +20,12 @@ using real = float;
 
 constexpr real SmallEpsilon = real(1e-8);
 constexpr real KindaSmallEpsilon = real(1e-4);
+
+// glm aliases
+#ifdef RT_USE_DOUBLE
+using vec3 = glm::dvec3;
+using colour = glm::dvec3;
+#else
+using vec3 = glm::vec3;
+using colour = glm::vec3;
+#endif

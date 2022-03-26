@@ -26,5 +26,14 @@
     <ClInclude Include="common.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ray.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pixel.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="components.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

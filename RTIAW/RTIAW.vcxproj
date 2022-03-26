@@ -156,7 +156,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.hpp" />
+    <ClInclude Include="components.hpp" />
     <ClInclude Include="glm-format.hpp" />
+    <ClInclude Include="pixel.hpp" />
+    <ClInclude Include="ray.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
