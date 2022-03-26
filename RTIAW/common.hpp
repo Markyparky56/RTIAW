@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <limits>
 #include <glm/fwd.hpp>
 
 using uint8 = std::uint8_t;
@@ -29,3 +30,7 @@ using colour = glm::dvec3;
 using vec3 = glm::vec3;
 using colour = glm::vec3;
 #endif
+
+// Constants
+constexpr real infinity = std::numeric_limits<real>::infinity();
+constexpr real pi = real(3.1415926535897932385);

@@ -4,6 +4,7 @@
 
 struct position : public vec3
 {
+  position() = default;
   position(real val)
     : vec3(val)
   {}
@@ -27,6 +28,7 @@ struct position : public vec3
 
 struct direction : public vec3
 {
+  direction() = default;
   direction(real val)
     : vec3(val)
   {}
@@ -46,4 +48,10 @@ struct direction : public vec3
   {
     return *this;
   }
+};
+
+// The assumption being a sphere entity will also have a position component
+struct sphere
+{
+  real radius;
 };

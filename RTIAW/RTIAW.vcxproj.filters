@@ -18,6 +18,15 @@
     <ClCompile Include="RTIAW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="hittestsystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hittests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="entityfactories.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glm-format.hpp">
@@ -36,6 +45,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="hittests.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="entityfactories.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hittestsystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

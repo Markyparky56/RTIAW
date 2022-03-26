@@ -1,19 +1,23 @@
 #pragma once
 #include "ray.hpp"
 #include "glm/geometric.hpp"
+#include "glm/gtx/norm.hpp"
 
-bool HitSphere(const position& centre, real radius, const Ray& ray)
+struct HitResult
 {
-  const vec3 centreToOrigin = ray.GetStart() - centre; // (A - C)
+  position pos;
+  vec3 normal;
+  real rayT;
+  uint8 bFrontFace : 1;
+};
 
-  // (b.b) + 2(b.(A-C)) + ((A-C).(A-C) - r^2)
+void FillHitResult(HitResult& hitResult, const Ray& ray, const real t, const vec3& pos, const vec3& n);
 
-  const real dotRayDir = glm::dot(ray.GetDirection(), ray.GetDirection()); // b.b
-  const real twoDotOCDir = real(2.0) * glm::dot(centreToOrigin, ray.GetDirection()); // 2(b.(A-C))
-  const real dotOCMinusRSqrd = glm::dot(centreToOrigin, centreToOrigin) - radius*radius; // (A-C).(A-C) - r^2
+// Returns the value of t if the ray intersects the sphere, otherwise -1
+bool HitSphere(const sphere& sph,
+  const position& centre,
+  const Ray& ray,
+  const real minT, const real maxT,
+  HitResult& outHitResult
+);
 
-  // b^2 - 4ac
-  const real discrim = twoDotOCDir*twoDotOCDir - 4*dotRayDir*dotOCMinusRSqrd;
-
-  return discrim > 0;
-}

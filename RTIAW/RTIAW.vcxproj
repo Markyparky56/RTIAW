@@ -147,6 +147,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="entityfactories.cpp" />
+    <ClCompile Include="hittests.cpp" />
+    <ClCompile Include="hittestsystem.cpp" />
     <ClCompile Include="RTIAW.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -157,8 +160,10 @@
   <ItemGroup>
     <ClInclude Include="common.hpp" />
     <ClInclude Include="components.hpp" />
+    <ClInclude Include="entityfactories.h" />
     <ClInclude Include="glm-format.hpp" />
     <ClInclude Include="hittests.hpp" />
+    <ClInclude Include="hittestsystem.hpp" />
     <ClInclude Include="pixel.hpp" />
     <ClInclude Include="ray.hpp" />
   </ItemGroup>

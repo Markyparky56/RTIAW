@@ -9,18 +9,22 @@
 #include "common.hpp"
 #include "pixel.hpp"
 #include "ray.hpp"
-#include "hittests.hpp"
+#include "hittestsystem.hpp"
+#include "entityfactories.h"
 
-colour RayColour(const Ray& ray)
+colour RayColour(const Ray& ray, const entt::registry& scene)
 {
-  if (HitSphere(position(0, 0, -1), 0.5, ray))
+  HitTestSystem hitTestSystem;
+  HitResult result;
+
+  if (hitTestSystem.TestScene(scene, ray, 0, infinity, result))
   {
-    return colour(1, 0, 0);
+    return real(0.5) * colour(result.normal + vec3(1));
   }
 
   const vec3 unitDirection = glm::normalize(ray.GetDirection());
-  const real t = real(0.5) * (unitDirection.y + real(1.0));
-  return (real(1.0) - t) * colour(1.0) + t * colour(0.5, 0.7, 1.0);
+  const real bg = real(0.5) * (unitDirection.y + real(1.0));
+  return (real(1.0) - bg) * colour(1.0) + bg * colour(0.5, 0.7, 1.0);
 }
 
 int main()
@@ -42,7 +46,12 @@ int main()
   constexpr vec3 horizontal = vec3(viewportWidth, 0, 0);
   constexpr vec3 vertical = vec3(0, viewportHeight, 0);
   constexpr vec3 lowerLeftCorner = origin - (horizontal / real(2)) - (vertical / real(2)) - vec3(0, 0, focalLength);
-    
+
+  // Registry
+  entt::registry sceneRegistry;
+  CreateSphere(sceneRegistry, vec3(0, 0, -1), 0.5);
+  CreateSphere(sceneRegistry, vec3(0, -100.5, -1), 100);
+   
   // Render
   const int32 maxY = imageHeight - 1;
   const int32 maxX = imageWidth - 1;
@@ -62,7 +71,7 @@ int main()
         origin, 
         lowerLeftCorner + u*horizontal + v*vertical - origin
       );
-      const colour col = RayColour(ray);
+      const colour col = RayColour(ray, sceneRegistry);
 
       imgBuffer.emplace_back(col);
     }
