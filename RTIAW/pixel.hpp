@@ -11,10 +11,13 @@ struct Pixel3
   {}
 
   Pixel3(const colour& col)
-    : r(uint8(col.r))
-    , g(uint8(col.g))
-    , b(uint8(col.b))
+    : r(uint8(realToByte * col.r))
+    , g(uint8(realToByte * col.g))
+    , b(uint8(realToByte * col.b))
   {
   }
   uint8 r, g, b;
+
+private:
+  static constexpr real realToByte = 256 - KindaSmallEpsilon;
 };

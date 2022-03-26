@@ -9,6 +9,10 @@ public:
     : Start(real(0.f))
     , Dir(real(1.f))
   {}
+  Ray(const position& start, const direction& dir)
+    : Start(start)
+    , Dir(dir)
+  {}
 
   position GetStart() const { return Start; }
   direction GetDirection() const { return Dir; }
