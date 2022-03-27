@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="entityfactories.cpp" />
     <ClCompile Include="hittests.cpp" />
     <ClCompile Include="hittestsystem.cpp" />

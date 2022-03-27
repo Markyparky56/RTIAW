@@ -8,18 +8,13 @@ class Camera
 {
 public:
   Camera(
-    const real aspectRatio=(real(16)/real(9)), 
-    const real focalLength=real(1.0), 
-    const position& pos=position(0))
-    : Pos(pos)
-  {
-    constexpr real viewportHeight = 2.0;
-    const real viewportWidth = aspectRatio * viewportHeight;
-    
-    horizontal = vec3(viewportWidth, 0, 0);
-    vertical = vec3(0, viewportHeight, 0);
-    LowerLeftCorner = Pos - (horizontal / real(2)) - (vertical / real(2)) - vec3(0, 0, focalLength);
-  }
+    const real vFov = real(90),
+    const real aspectRatio = (real(16) / real(9)),
+    const real focalLength = real(1.0),
+    const position& pos = position(0),
+    const position& lookAt = position(0,0,-1),
+    const vec3& vup = vec3(0,1,0)
+  );
 
   Ray GetRay(vec2 uv) const
   {

@@ -83,20 +83,30 @@ int main()
   imgBuffer.reserve(imageWidth * imageHeight);
 
   // Camera
-  Camera camera;
+  Camera camera(20, aspectRatio, real(1.0), vec3(-2, 2, 1), vec3(0,0,-1), vec3(0,1,0));
+
+  const real R = glm::cos(pi / real(4));
 
   // Material data
+  LambertianData red{ colour(real(1.0), 0, 0) };
+  LambertianData trueBlue{ colour(0, 0, real(1.0)) };
   LambertianData yellow{ colour(real(0.8), real(0.8), real(0.0)) };
   LambertianData orange{ colour(real(0.7), real(0.3), real(0.3)) };
+  LambertianData blue{ colour(real(0.1), real(0.2), real(0.5)) };
   MetalData lightGrey{ colour(real(0.8)), real(0.3)};
   MetalData bronze{ colour(real(0.8), real(0.6), real(0.2)), real(1.0) };
+  DielectricData glass15{ real(1.5) };
 
   // Registry
   entt::registry sceneRegistry;
-  CreateSphere(sceneRegistry, vec3(0, -100.5, -1), 100, &LambertianMaterial, yellow);
-  CreateSphere(sceneRegistry, vec3(0, 0, -1), real(0.5), &LambertianMaterial, orange);
-  CreateSphere(sceneRegistry, vec3(-1, 0, -1), real(0.5), &MetalMaterial, lightGrey);
-  CreateSphere(sceneRegistry, vec3(1, 0, -1), real(0.5), &MetalMaterial, bronze);
+  CreateSphere(sceneRegistry, vec3(0, -100.5, -1), 100, &LambertianMaterial, yellow); // ground
+  CreateSphere(sceneRegistry, vec3(0, 0, -1), real(0.5), &LambertianMaterial, blue); // centre
+  CreateSphere(sceneRegistry, vec3(-1, 0, -1), real(0.5), &DielectricMaterial, glass15); // left
+  CreateSphere(sceneRegistry, vec3(-1, 0, -1), real(-0.4), &DielectricMaterial, glass15); // left
+  CreateSphere(sceneRegistry, vec3(1, 0, -1), real(0.5), &MetalMaterial, bronze); // right
+
+  //CreateSphere(sceneRegistry, vec3(-R, 0, -1), R, &LambertianMaterial, trueBlue);
+  //CreateSphere(sceneRegistry, vec3(R, 0, -1), R, &LambertianMaterial, red);
    
   // Render
   const int32 maxY = imageHeight - 1;
