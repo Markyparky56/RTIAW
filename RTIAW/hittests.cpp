@@ -1,4 +1,6 @@
 #include "hittests.hpp"
+#include "glm/geometric.hpp"
+#include "glm/gtx/norm.hpp"
 
 void FillHitResult(HitResult& hitResult, const Ray& ray, const real t, const vec3& pos, const vec3& n)
 {

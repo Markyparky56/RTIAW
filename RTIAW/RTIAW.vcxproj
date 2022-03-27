@@ -158,9 +158,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="components.hpp" />
-    <ClInclude Include="entityfactories.h" />
+    <ClInclude Include="entityfactories.hpp" />
     <ClInclude Include="glm-format.hpp" />
     <ClInclude Include="hittests.hpp" />
     <ClInclude Include="hittestsystem.hpp" />

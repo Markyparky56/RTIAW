@@ -10,7 +10,10 @@
 #include "pixel.hpp"
 #include "ray.hpp"
 #include "hittestsystem.hpp"
-#include "entityfactories.h"
+#include "entityfactories.hpp"
+#include "camera.hpp"
+
+static prng SMTRng;
 
 colour RayColour(const Ray& ray, const entt::registry& scene)
 {
@@ -27,8 +30,15 @@ colour RayColour(const Ray& ray, const entt::registry& scene)
   return (real(1.0) - bg) * colour(1.0) + bg * colour(0.5, 0.7, 1.0);
 }
 
+void ReduceMultiSampledColour(colour& inCol, const real invSamplesPerPixel)
+{
+  inCol *= invSamplesPerPixel;
+}
+
 int main()
 {
+  SeedRNG();
+
   // Image
   constexpr real aspectRatio = real(16) / real(9);
   constexpr int32 imageWidth = 400;
@@ -38,14 +48,9 @@ int main()
   imgBuffer.reserve(imageWidth * imageHeight);
 
   // Camera
-  constexpr real viewportHeight = 2.0;
-  constexpr real viewportWidth = aspectRatio * viewportHeight;
-  constexpr real focalLength = 1.0;
-
-  constexpr vec3 origin = vec3(0);
-  constexpr vec3 horizontal = vec3(viewportWidth, 0, 0);
-  constexpr vec3 vertical = vec3(0, viewportHeight, 0);
-  constexpr vec3 lowerLeftCorner = origin - (horizontal / real(2)) - (vertical / real(2)) - vec3(0, 0, focalLength);
+  Camera camera;
+  constexpr uint32 samplesPerPixel = 100;
+  constexpr real invSamplesPerPixel = real(1.0) / real(samplesPerPixel);
 
   // Registry
   entt::registry sceneRegistry;
@@ -62,16 +67,17 @@ int main()
   {
     for (int32 x = 0; x < imageWidth; ++x)
     {
-      //const colour col = { real(x) / maxX, real(y) / maxY, real(0.25) };
-
-      const real u = real(x) * invMaxX;
-      const real v = real(y) * invMaxY;
-
-      Ray ray(
-        origin, 
-        lowerLeftCorner + u*horizontal + v*vertical - origin
-      );
-      const colour col = RayColour(ray, sceneRegistry);
+      colour col = colour(0);
+      for (int32 sample = 0; sample < samplesPerPixel; ++sample)
+      {
+        vec2 uv(
+          (real(x) + GetRandomReal()) * invMaxX,
+          (real(y) + GetRandomReal()) * invMaxY
+        );
+        Ray ray = camera.GetRay(uv);
+        col += RayColour(ray, sceneRegistry);
+      }
+      ReduceMultiSampledColour(col, invSamplesPerPixel);     
 
       imgBuffer.emplace_back(col);
     }

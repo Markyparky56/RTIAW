@@ -1,7 +1,5 @@
 #pragma once
 #include "ray.hpp"
-#include "glm/geometric.hpp"
-#include "glm/gtx/norm.hpp"
 
 struct HitResult
 {

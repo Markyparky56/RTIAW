@@ -11,9 +11,9 @@ struct Pixel3
   {}
 
   Pixel3(const colour& col)
-    : r(uint8(realToByte * col.r))
-    , g(uint8(realToByte * col.g))
-    , b(uint8(realToByte * col.b))
+    : r(uint8(realToByte * glm::clamp(col.r, real(0.0), real(1) - KindaSmallEpsilon)))
+    , g(uint8(realToByte * glm::clamp(col.g, real(0.0), real(1) - KindaSmallEpsilon)))
+    , b(uint8(realToByte * glm::clamp(col.b, real(0.0), real(1) - KindaSmallEpsilon)))
   {
   }
   uint8 r, g, b;
