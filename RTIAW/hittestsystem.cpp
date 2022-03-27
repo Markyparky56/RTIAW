@@ -19,7 +19,7 @@ bool HitTestSystem::TestSpheres(const entt::registry& registry, const Ray& ray, 
   for (const auto& [entity, sphere, position] : registry.view<sphere, position>().each())
   {
     // Note the use of closestT in place of maxT
-    if (HitSphere(sphere, position, ray, minT, closestT, tempHitResult))
+    if (HitSphere(entity, sphere, position, ray, minT, closestT, tempHitResult))
     {
       hitAnything = true;
       closestT = tempHitResult.rayT;

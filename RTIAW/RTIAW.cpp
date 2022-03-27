@@ -7,22 +7,50 @@
 #include "fmt/chrono.h"
 #include "entt/entity/registry.hpp"
 #include "common.hpp"
+#include "utility.hpp"
 #include "pixel.hpp"
 #include "ray.hpp"
 #include "hittestsystem.hpp"
 #include "entityfactories.hpp"
 #include "camera.hpp"
+#include "MaterialFunctions.hpp"
 
-static prng SMTRng;
+prng GMTRng;
 
-colour RayColour(const Ray& ray, const entt::registry& scene)
+colour RayColour(const Ray& ray, const entt::registry& scene, int32 depth)
 {
-  HitTestSystem hitTestSystem;
+  // Safety check to avoid stack overflows from infinite bounces
+  if (depth <= 0)
+  {
+    return colour(0);
+  }
+
+  static HitTestSystem hitTestSystem;
   HitResult result;
 
-  if (hitTestSystem.TestScene(scene, ray, 0, infinity, result))
+  if (hitTestSystem.TestScene(scene, ray, KindaSmallEpsilon, infinity, result))
   {
-    return real(0.5) * colour(result.normal + vec3(1));
+    if(scene.valid(result.entity))
+    {
+      Ray scatteredRay;
+      colour attenuation;
+      
+      // Get material function from hit entity
+      const material& mat = scene.get<material>(result.entity);
+      if (mat.materialFunc && (*mat.materialFunc)(scene, ray, result, attenuation, scatteredRay))
+      {
+        return attenuation * RayColour(scatteredRay, scene, --depth);
+      }
+      else
+      {
+        return colour(0);
+      }
+    }
+
+    // Calculate bounce direction
+    const vec3 target = result.pos + result.normal + GetRandomUnitVector();
+
+    return real(0.5) * RayColour(Ray(result.pos, target - result.pos), scene, --depth);
   }
 
   const vec3 unitDirection = glm::normalize(ray.GetDirection());
@@ -30,9 +58,13 @@ colour RayColour(const Ray& ray, const entt::registry& scene)
   return (real(1.0) - bg) * colour(1.0) + bg * colour(0.5, 0.7, 1.0);
 }
 
-void ReduceMultiSampledColour(colour& inCol, const real invSamplesPerPixel)
+void ReduceMultiSampledColour(colour& inCol, const real invSamplesPerPixel, const bool gammeCorrect=true)
 {
   inCol *= invSamplesPerPixel;
+  if (gammeCorrect)
+  {
+    inCol = glm::sqrt(inCol);
+  }
 }
 
 int main()
@@ -43,19 +75,28 @@ int main()
   constexpr real aspectRatio = real(16) / real(9);
   constexpr int32 imageWidth = 400;
   constexpr int32 imageHeight = int32(imageWidth / aspectRatio);
+  constexpr uint32 samplesPerPixel = 100;
+  constexpr real invSamplesPerPixel = real(1.0) / real(samplesPerPixel);
+  constexpr int32 maxBounces = 50;
 
   std::vector<Pixel3> imgBuffer;
   imgBuffer.reserve(imageWidth * imageHeight);
 
   // Camera
   Camera camera;
-  constexpr uint32 samplesPerPixel = 100;
-  constexpr real invSamplesPerPixel = real(1.0) / real(samplesPerPixel);
+
+  // Material data
+  LambertianData yellow{ colour(real(0.8), real(0.8), real(0.0)) };
+  LambertianData orange{ colour(real(0.7), real(0.3), real(0.3)) };
+  MetalData lightGrey{ colour(real(0.8)), real(0.3)};
+  MetalData bronze{ colour(real(0.8), real(0.6), real(0.2)), real(1.0) };
 
   // Registry
   entt::registry sceneRegistry;
-  CreateSphere(sceneRegistry, vec3(0, 0, -1), 0.5);
-  CreateSphere(sceneRegistry, vec3(0, -100.5, -1), 100);
+  CreateSphere(sceneRegistry, vec3(0, -100.5, -1), 100, &LambertianMaterial, yellow);
+  CreateSphere(sceneRegistry, vec3(0, 0, -1), real(0.5), &LambertianMaterial, orange);
+  CreateSphere(sceneRegistry, vec3(-1, 0, -1), real(0.5), &MetalMaterial, lightGrey);
+  CreateSphere(sceneRegistry, vec3(1, 0, -1), real(0.5), &MetalMaterial, bronze);
    
   // Render
   const int32 maxY = imageHeight - 1;
@@ -75,7 +116,7 @@ int main()
           (real(y) + GetRandomReal()) * invMaxY
         );
         Ray ray = camera.GetRay(uv);
-        col += RayColour(ray, sceneRegistry);
+        col += RayColour(ray, sceneRegistry, maxBounces);
       }
       ReduceMultiSampledColour(col, invSamplesPerPixel);     
 

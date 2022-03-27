@@ -114,7 +114,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);RT_USE_DOUBLE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)\entt\src;$(SolutionDir)\fmt\include;$(SolutionDir)\glm;$(SolutionDir)\stb\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -132,7 +132,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);RT_USE_DOUBLE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)\entt\src;$(SolutionDir)\fmt\include;$(SolutionDir)\glm;$(SolutionDir)\stb\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -150,6 +150,7 @@
     <ClCompile Include="entityfactories.cpp" />
     <ClCompile Include="hittests.cpp" />
     <ClCompile Include="hittestsystem.cpp" />
+    <ClCompile Include="MaterialFunctions.cpp" />
     <ClCompile Include="RTIAW.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -165,8 +166,10 @@
     <ClInclude Include="glm-format.hpp" />
     <ClInclude Include="hittests.hpp" />
     <ClInclude Include="hittestsystem.hpp" />
+    <ClInclude Include="MaterialFunctions.hpp" />
     <ClInclude Include="pixel.hpp" />
     <ClInclude Include="ray.hpp" />
+    <ClInclude Include="utility.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

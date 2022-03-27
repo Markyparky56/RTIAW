@@ -1,6 +1,8 @@
 #pragma once
-#include "common.hpp"
 #include "glm/vec3.hpp"
+#include "glm/common.hpp"
+#include "common.hpp"
+#include "MaterialFunctions.hpp"
 
 struct position : public vec3
 {
@@ -54,4 +56,31 @@ struct direction : public vec3
 struct sphere
 {
   real radius;
+};
+
+struct material
+{
+  MaterialFunc materialFunc;
+};
+
+struct LambertianData
+{
+  colour albedo;
+};
+
+struct MetalData
+{
+  // Need a constructor to allow us to clamp the fuzz value
+  MetalData(const colour& a, const real f)
+    : albedo(a)
+    , fuzz(glm::clamp(f, real(0), real(1)))
+  {}
+
+  colour albedo;
+  real fuzz;
+};
+
+struct DielectricData
+{
+  real ir;
 };
