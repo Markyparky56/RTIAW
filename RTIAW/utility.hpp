@@ -63,6 +63,21 @@ inline vec3 GetRandomUnitVector()
   return glm::normalize(GetRandomInUnitSphere());
 }
 
+// Sus function
+inline vec3 GetRandomInUnitDisc()
+{
+  while (true)
+  {
+    const vec3 v = vec3(GetRandomReal(-1, 1), GetRandomReal(-1, 1), 0);
+    if (glm::length2(v) >= 1)
+    {
+      // Try again
+      continue;
+    }
+    return v;
+  }
+}
+
 inline bool IsNearlyZero(const vec3& v)
 {
   return glm::epsilonEqual(v, vec3(0), SmallEpsilon) == glm::bvec3(true);

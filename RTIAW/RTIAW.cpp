@@ -67,15 +67,64 @@ void ReduceMultiSampledColour(colour& inCol, const real invSamplesPerPixel, cons
   }
 }
 
+void CreateRandomScene(entt::registry& registry)
+{
+  const LambertianData ground{ colour(real(0.5)) };
+  CreateSphere(registry, position(0, -1000, 0), 1000, &LambertianMaterial, ground);
+
+  for (int32 a = -11; a < 11; ++a)
+  {
+    for (int32 b = -11; b < 11; ++b)
+    {
+      const real rndMat = GetRandomReal();
+      const position centre(a + real(0.9) * GetRandomReal(), 0.2, b + real(0.9) * GetRandomReal());
+
+      if (glm::length(centre - position(4, 0.2, 0)) > 0.9)
+      {
+        if (rndMat < real(0.8))
+        {
+          // Diffuse
+          const colour albedo = GetRandomVec3() * GetRandomVec3();
+          const LambertianData lamData{ albedo };
+          CreateSphere(registry, centre, 0.2, &LambertianMaterial, lamData);
+        }
+        else if (rndMat < real(0.95))
+        {
+          // Metal
+          const colour albedo = GetRandomVec3(real(0.5), real(1.0));
+          const real fuzz = GetRandomReal();
+          MetalData metData{ albedo, fuzz };
+          CreateSphere(registry, centre, 0.2, &MetalMaterial, metData);
+        }
+        else
+        {
+          // Glass
+          const DielectricData diData{ real(1.5) };
+          CreateSphere(registry, centre, 0.2, &DielectricMaterial, diData);
+        }
+      }
+    }
+  }
+
+  const DielectricData diData15{ real(1.5) };
+  CreateSphere(registry, position(0, 1, 0), real(1.0), &DielectricMaterial, diData15);
+
+  const LambertianData lamData{ colour(real(0.4), real(0.2), real(0.1)) };
+  CreateSphere(registry, position(-4, 1, 0), 1.0, &LambertianMaterial, lamData);
+  
+  const MetalData metData{ colour(real(0.7), real(0.6), real(0.5)), 0.0 };
+  CreateSphere(registry, position(4, 1, 0), 1.0, &MetalMaterial, metData);
+}
+
 int main()
 {
   SeedRNG();
 
   // Image
-  constexpr real aspectRatio = real(16) / real(9);
-  constexpr int32 imageWidth = 400;
+  constexpr real aspectRatio = real(3) / real(2); // real(16) / real(9);
+  constexpr int32 imageWidth = 1200; // 400;
   constexpr int32 imageHeight = int32(imageWidth / aspectRatio);
-  constexpr uint32 samplesPerPixel = 100;
+  constexpr uint32 samplesPerPixel = 50;// 100;
   constexpr real invSamplesPerPixel = real(1.0) / real(samplesPerPixel);
   constexpr int32 maxBounces = 50;
 
@@ -83,7 +132,12 @@ int main()
   imgBuffer.reserve(imageWidth * imageHeight);
 
   // Camera
-  Camera camera(20, aspectRatio, real(1.0), vec3(-2, 2, 1), vec3(0,0,-1), vec3(0,1,0));
+  position lookFrom(13, 2, 3);
+  position lookAt(0, 0, 0);
+  vec3 vup(0, 1, 0);
+  real distToFocus = 10;// glm::length(lookFrom - lookAt);
+  real aperture = 0.1;
+  Camera camera(20, aspectRatio, aperture, distToFocus, lookFrom, lookAt, vup);
 
   const real R = glm::cos(pi / real(4));
 
@@ -99,11 +153,13 @@ int main()
 
   // Registry
   entt::registry sceneRegistry;
-  CreateSphere(sceneRegistry, vec3(0, -100.5, -1), 100, &LambertianMaterial, yellow); // ground
-  CreateSphere(sceneRegistry, vec3(0, 0, -1), real(0.5), &LambertianMaterial, blue); // centre
-  CreateSphere(sceneRegistry, vec3(-1, 0, -1), real(0.5), &DielectricMaterial, glass15); // left
-  CreateSphere(sceneRegistry, vec3(-1, 0, -1), real(-0.4), &DielectricMaterial, glass15); // left
-  CreateSphere(sceneRegistry, vec3(1, 0, -1), real(0.5), &MetalMaterial, bronze); // right
+  CreateRandomScene(sceneRegistry);
+
+  //CreateSphere(sceneRegistry, vec3(0, -100.5, -1), 100, &LambertianMaterial, yellow); // ground
+  //CreateSphere(sceneRegistry, vec3(0, 0, -1), real(0.5), &LambertianMaterial, blue); // centre
+  //CreateSphere(sceneRegistry, vec3(-1, 0, -1), real(0.5), &DielectricMaterial, glass15); // left
+  //CreateSphere(sceneRegistry, vec3(-1, 0, -1), real(-0.4), &DielectricMaterial, glass15); // left
+  //CreateSphere(sceneRegistry, vec3(1, 0, -1), real(0.5), &MetalMaterial, bronze); // right
 
   //CreateSphere(sceneRegistry, vec3(-R, 0, -1), R, &LambertianMaterial, trueBlue);
   //CreateSphere(sceneRegistry, vec3(R, 0, -1), R, &LambertianMaterial, red);
@@ -113,7 +169,7 @@ int main()
   const int32 maxX = imageWidth - 1;
   const real invMaxY = real(1) / maxY;
   const real invMaxX = real(1) / maxX;
-  const int32 progressUpdate = imageHeight / 10;
+  const int32 progressUpdate = imageHeight / 100;
   for (int32 y = maxY; y >= 0; --y)
   {
     for (int32 x = 0; x < imageWidth; ++x)
