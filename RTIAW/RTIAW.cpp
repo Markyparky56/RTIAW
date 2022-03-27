@@ -30,7 +30,7 @@ colour RayColour(const Ray& ray, const entt::registry& scene, int32 depth)
 
   if (hitTestSystem.TestScene(scene, ray, KindaSmallEpsilon, infinity, result))
   {
-    if(scene.valid(result.entity))
+    //if(scene.valid(result.entity))
     {
       Ray scatteredRay;
       colour attenuation;

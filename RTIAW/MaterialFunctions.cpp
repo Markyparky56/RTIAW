@@ -7,7 +7,7 @@
 
 bool LambertianMaterial(const entt::registry& sceneRegistry, const Ray& inRay, const HitResult& impactResult, colour& outColour, Ray& scatteredRay)
 {
-  if (sceneRegistry.valid(impactResult.entity))
+  //if (sceneRegistry.valid(impactResult.entity))
   {
     // Get material data from registry
     const LambertianData& lamData = sceneRegistry.get<LambertianData>(impactResult.entity);
@@ -30,7 +30,7 @@ bool LambertianMaterial(const entt::registry& sceneRegistry, const Ray& inRay, c
 
 bool MetalMaterial(const entt::registry& sceneRegistry, const Ray& inRay, const HitResult& impactResult, colour& outColour, Ray& scatteredRay)
 {
-  if (sceneRegistry.valid(impactResult.entity))
+  //if (sceneRegistry.valid(impactResult.entity))
   {
     // Get material data from registry
     const MetalData& metData = sceneRegistry.get<MetalData>(impactResult.entity);
@@ -57,7 +57,7 @@ real reflectance(real cosine, real refractIndex)
 
 bool DielectricMaterial(const entt::registry& sceneRegistry, const Ray& inRay, const HitResult& impactResult, colour& outColour, Ray& scatteredRay)
 {
-  if (sceneRegistry.valid(impactResult.entity))
+  //if (sceneRegistry.valid(impactResult.entity))
   {
     // Get material data from registry
     const DielectricData& diData = sceneRegistry.get<DielectricData>(impactResult.entity);
