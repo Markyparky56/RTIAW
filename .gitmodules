@@ -10,3 +10,6 @@
 [submodule "stb"]
 	path = stb
 	url = https://github.com/nothings/stb.git
+[submodule "enkiTS"]
+	path = enkiTS
+	url = https://github.com/dougbinks/enkiTS.git
