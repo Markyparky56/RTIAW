@@ -6,6 +6,7 @@
 #include "glm-format.hpp"
 #include "fmt/chrono.h"
 #include "entt/entity/registry.hpp"
+#include "TaskScheduler.h"
 #include "common.hpp"
 #include "utility.hpp"
 #include "pixel.hpp"
@@ -16,6 +17,8 @@
 #include "MaterialFunctions.hpp"
 
 prng GMTRng;
+
+enki::TaskScheduler GTS;
 
 colour RayColour(const Ray& ray, const entt::registry& scene, int32 depth)
 {
@@ -116,20 +119,80 @@ void CreateRandomScene(entt::registry& registry)
   CreateSphere(registry, position(4, 1, 0), 1.0, &MetalMaterial, metData);
 }
 
+struct TaskLauncher : enki::ITaskSet
+{
+  ITaskSet* TaskToLaunch = nullptr;
+  void ExecuteRange(enki::TaskSetPartition range, uint32 threadNum) override
+  {
+    GTS.AddTaskSetToPipe(TaskToLaunch);
+  }
+};
+
+struct RenderPatchTask : enki::ITaskSet
+{
+  int32 w, h, samplesPerPixel, maxBounces;
+  std::vector<Pixel3>* ImgBuffer;
+  entt::registry* sceneRegistry;
+  Camera* camera;
+
+  void ExecuteRange(enki::TaskSetPartition range, uint32 threadNum) override
+  {
+    // Work out where we are on the image
+    uint32 i;
+    i = range.start;
+
+    const int32 maxY = h - 1;
+    const int32 maxX = w - 1;
+    const real invMaxY = real(1) / maxY;
+    const real invMaxX = real(1) / maxX;
+    const real invSamplesPerPixel = real(1) / samplesPerPixel;
+
+    // For-each in range segment
+    for (; i < range.end; ++i)
+    {
+      int32 x = i % w;
+      int32 y = maxY - (i / w);
+
+      colour col(0);
+      for (int32 sample = 0; sample < samplesPerPixel; ++sample)
+      {
+        vec2 uv(
+          (real(x) + GetRandomReal()) * invMaxX,
+          (real(y) + GetRandomReal()) * invMaxY
+        );
+        Ray ray = camera->GetRay(uv);
+        col += RayColour(ray, *sceneRegistry, maxBounces);
+      }
+      ReduceMultiSampledColour(col, invSamplesPerPixel);
+
+      (*ImgBuffer)[i] = col;
+    } 
+
+    // TODO: use channel to output from single thread
+    fmt::print("{} to {} complete\n", range.start, range.end);
+  }
+};
+
+struct RenderComplete : enki::ICompletable
+{
+  enki::Dependency dependency;
+};
+
 int main()
 {
   SeedRNG();
+  GTS.Initialize();
 
   // Image
-  constexpr real aspectRatio = real(3) / real(2); // real(16) / real(9);
-  constexpr int32 imageWidth = 1200; // 400;
+  constexpr real aspectRatio = real(16) / real(9);
+  constexpr int32 imageWidth = 3840;
   constexpr int32 imageHeight = int32(imageWidth / aspectRatio);
-  constexpr uint32 samplesPerPixel = 50;// 100;
+  constexpr uint32 samplesPerPixel = 500;
   constexpr real invSamplesPerPixel = real(1.0) / real(samplesPerPixel);
-  constexpr int32 maxBounces = 50;
+  constexpr int32 maxBounces = 100;
 
   std::vector<Pixel3> imgBuffer;
-  imgBuffer.reserve(imageWidth * imageHeight);
+  imgBuffer.resize(imageWidth * imageHeight);
 
   // Camera
   position lookFrom(13, 2, 3);
@@ -151,7 +214,7 @@ int main()
   MetalData bronze{ colour(real(0.8), real(0.6), real(0.2)), real(1.0) };
   DielectricData glass15{ real(1.5) };
 
-  // Registry
+  // Registry & Scene
   entt::registry sceneRegistry;
   CreateRandomScene(sceneRegistry);
 
@@ -164,40 +227,60 @@ int main()
   //CreateSphere(sceneRegistry, vec3(-R, 0, -1), R, &LambertianMaterial, trueBlue);
   //CreateSphere(sceneRegistry, vec3(R, 0, -1), R, &LambertianMaterial, red);
    
-  // Render
-  const int32 maxY = imageHeight - 1;
-  const int32 maxX = imageWidth - 1;
-  const real invMaxY = real(1) / maxY;
-  const real invMaxX = real(1) / maxX;
-  const int32 progressUpdate = imageHeight / 100;
-  for (int32 y = maxY; y >= 0; --y)
-  {
-    for (int32 x = 0; x < imageWidth; ++x)
-    {
-      colour col = colour(0);
-      for (int32 sample = 0; sample < samplesPerPixel; ++sample)
-      {
-        vec2 uv(
-          (real(x) + GetRandomReal()) * invMaxX,
-          (real(y) + GetRandomReal()) * invMaxY
-        );
-        Ray ray = camera.GetRay(uv);
-        col += RayColour(ray, sceneRegistry, maxBounces);
-      }
-      ReduceMultiSampledColour(col, invSamplesPerPixel);     
+  // Task Graph
+  RenderPatchTask renderTask;
+  renderTask.ImgBuffer = &imgBuffer;
+  renderTask.camera = &camera;
+  renderTask.w = imageWidth;
+  renderTask.h = imageHeight;
+  renderTask.samplesPerPixel = samplesPerPixel;
+  renderTask.maxBounces = maxBounces;
+  renderTask.sceneRegistry = &sceneRegistry;
+  renderTask.m_SetSize = imageWidth * imageHeight;
 
-      imgBuffer.emplace_back(col);
-    }
+  TaskLauncher taskLauncher;
+  taskLauncher.TaskToLaunch = &renderTask;
 
-    // Check progress
-    const int32 step = (imageHeight - y);
-    const real normalised = real(step) / real(imageHeight);
-    const real percent = normalised * real(100);
-    if (percent > 0 && step % progressUpdate == 0)
-    {
-      fmt::print("{}% done...\n", percent);
-    }
-  }
+  RenderComplete renderComplete;
+  renderComplete.SetDependency(renderComplete.dependency, &renderTask);
+  
+  GTS.AddTaskSetToPipe(&renderTask);
+  GTS.WaitforTask(&renderComplete);
+
+  //// Render
+  //const int32 maxY = imageHeight - 1;
+  //const int32 maxX = imageWidth - 1;
+  //const real invMaxY = real(1) / maxY;
+  //const real invMaxX = real(1) / maxX;
+  //const int32 progressUpdate = imageHeight / 100;
+  //for (int32 y = maxY; y >= 0; --y)
+  //{
+  //  for (int32 x = 0; x < imageWidth; ++x)
+  //  {
+  //    colour col = colour(0);
+  //    for (int32 sample = 0; sample < samplesPerPixel; ++sample)
+  //    {
+  //      vec2 uv(
+  //        (real(x) + GetRandomReal()) * invMaxX,
+  //        (real(y) + GetRandomReal()) * invMaxY
+  //      );
+  //      Ray ray = camera.GetRay(uv);
+  //      col += RayColour(ray, sceneRegistry, maxBounces);
+  //    }
+  //    ReduceMultiSampledColour(col, invSamplesPerPixel);     
+
+  //    imgBuffer.emplace_back(col);
+  //  }
+
+  //  // Check progress
+  //  const int32 step = (imageHeight - y);
+  //  const real normalised = real(step) / real(imageHeight);
+  //  const real percent = normalised * real(100);
+  //  if (percent > 0 && step % progressUpdate == 0)
+  //  {
+  //    fmt::print("{}% done...\n", percent);
+  //  }
+  //}
 
   auto timeNow = std::chrono::system_clock::now();
   std::string filename = fmt::format("rtiaw-{:%d-%H-%M-%S}.png", timeNow);

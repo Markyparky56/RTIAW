@@ -4,6 +4,7 @@
 
 struct Pixel3
 {
+  Pixel3() = default;
   Pixel3(uint8 _r, uint8 _g, uint8 _b)
     : r(_r)
     , g(_g)
